@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upcoming Programs - जनसंत परिवार</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 0;
+background: #fff;
+}
+header {
+background: #ff9933;
+color: white;
+padding: 10px;
+text-align: center;
+}
+nav {
+background: #f4f4f4;
+padding: 10px;
+text-align: center;
+}
+nav a {
+margin: 0 15px;
+text-decoration: none;
+color: #333;
+}
+.content {
+padding: 20px;
+text-align: center;
+}
+.program-details {
+margin: 20px auto;
+max-width: 800px;
+padding: 15px;
+background: #f9f9f9;
+border-radius: 5px;
+display: flex;
+align-items: center;
+gap: 20px;
+}
+.program-details .details {
+flex: 1;
+text-align: left;
+}
+.program-details ul {
+list-style-type: none;
+padding: 0;
+}
+.program-details li {
+margin: 15px 0;
+line-height: 1.6;
+font-size: clamp(14px, 4vw, 16px);
+}
+.program-details li strong {
+margin-right: 10px;
+}
+.program-details img {
+max-width: 300px;
+height: auto;
+border-radius: 10px;
+}
+@media (max-width: 768px) {
+.program-details {
+flex-direction: column;
+text-align: center;
+padding: 10px;
+}
+.program-details .details {
+text-align: center;
+}
+.program-details img {
+max-width: 100%;
+margin: 0;
+}
+nav a {
+margin: 5px 10px;
+display: inline-block;
+}
+}
+@media (max-width: 480px) {
+header h1 {
+font-size: 1.5rem;
+}
+.content h2 {
+font-size: 1.2rem;
+}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>जनसंत परिवार</h1>
+</header>
+<nav>
+<a href="jansant1.html">Home</a>
+<a href="profiles.html">Profiles</a>
+<a href="programmes.html">Programs</a>
+<a href="gallery.html">Gallery</a>
+<a href="upcoming.html">Upcoming</a>
+<a href="contact.html">Contact</a>
+</nav>
+<div class="content">
+<h2>आगामी कार्यक्रम</h2>
+<div id="program-list"></div>
+<div id="admin-login" style="margin-top: 20px;">
+<input type="password" id="admin-password" placeholder="Admin Password">
+<button onclick="checkAdmin()">Login</button>
+</div>
+<div id="admin-panel" style="display: none; margin-top: 20px;">
+<h3>Update Upcoming Event</h3>
+<input type="text" id="event-name" placeholder="कार्यक्रम का नाम"><br><br>
+<input type="text" id="event-date" placeholder="तिथि"><br><br>
+<input type="text" id="event-location" placeholder="स्थान"><br><br>
+<input type="text" id="event-description" placeholder="विवरण"><br><br>
+<input type="text" id="event-organizer" placeholder="आयोजक"><br><br>
+<input type="text" id="event-image" placeholder="Image URL"><br><br>
+<button onclick="updateEvent()">Update Event</button>
+</div>
+</div>
+
+<script>
+fetch('/.netlify/functions/get_events')
+.then(response => {
+if (!response.ok) throw new Error('Network response was not ok');
+return response.json();
+})
+.then(data => {
+const programList = document.getElementById('program-list');
+programList.innerHTML = '';
+data.forEach(event => {
+programList.innerHTML += `
+<div class="program-details">
+<div class="details">
+<ul>
+<li><strong>कार्यक्रम का नाम:</strong> ${event.name}</li>
+<li><strong>तिथि:</strong> ${event.date}</li>
+<li><strong>स्थान:</strong> ${event.location}</li>
+<li><strong>विवरण:</strong> ${event.description}</li>
+<li><strong>आयोजक:</strong> ${event.organizer}</li>
+</ul>
+</div>
+<img src="${event.image}" alt="Program Photo">
+</div>
+`;
+});
+})
+.catch(error => console.error('Error fetching events:', error));
+
+function checkAdmin() {
+const password = document.getElementById('admin-password').value;
+if (password === 'admin123') {
+document.getElementById('admin-login').style.display = 'none';
+document.getElementById('admin-panel').style.display = 'block';
+} else {
+alert('Wrong Password!');
+}
+}
+
+function updateEvent() {
+const eventData = {
+name: document.getElementById('event-name').value,
+date: document.getElementById('event-date').value,
+location: document.getElementById('event-location').value,
+description: document.getElementById('event-description').value,
+organizer: document.getElementById('event-organizer').value,
+image: document.getElementById('event-image').value || 'https://via.placeholder.com/300x200'
+};
+
+fetch('/.netlify/functions/update_events', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(eventData)
+})
+.then(response => response.text())
+.then(data => {
+alert(data);
+location.reload();
+})
+.catch(error => console.error('Error updating event:', error));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - जनसंत परिवार</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 0;
+background: #fff;
+}
+header {
+background: #ff9933;
+color: white;
+padding: 10px;
+text-align: center;
+}
+.content {
+max-width: 700px;
+margin: 0 auto;
+padding: 30px 20px;
+}
+.card {
+border: 1px solid #eee;
+border-radius: 10px;
+padding: 20px;
+margin-bottom: 20px;
+box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+input[type="password"], input[type="file"] {
+width: 100%;
+padding: 10px;
+margin: 10px 0;
+box-sizing: border-box;
+border: 1px solid #ccc;
+border-radius: 6px;
+}
+button {
+background: #ff9933;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 6px;
+cursor: pointer;
+font-size: 15px;
+}
+button:hover { background: #e6822a; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+#message {
+margin-top: 10px;
+font-weight: bold;
+}
+.photo-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+gap: 15px;
+margin-top: 15px;
+}
+.photo-item {
+position: relative;
+}
+.photo-item img {
+width: 100%;
+height: 120px;
+object-fit: cover;
+border-radius: 8px;
+}
+.photo-item button {
+position: absolute;
+top: 5px;
+right: 5px;
+background: #cc0000;
+padding: 4px 8px;
+font-size: 12px;
+}
+#admin-panel { display: none; }
+</style>
+</head>
+<body>
+<header>
+<h1>Admin Panel - जनसंत परिवार</h1>
+</header>
+<div class="content">
+
+<div class="card" id="login-card">
+<h3>लॉगिन करें</h3>
+<input type="password" id="password-input" placeholder="Admin password डालें">
+<button onclick="login()">लॉगिन</button>
+<div id="login-message"></div>
+</div>
+
+<div id="admin-panel">
+<div class="card">
+<h3>नई फोटो अपलोड करें</h3>
+<input type="file" id="photo-input" accept="image/*">
+<button onclick="uploadPhoto()" id="upload-btn">अपलोड करें</button>
+<div id="message"></div>
+</div>
+
+<div class="card">
+<h3>मौजूदा फोटो (हटाने के लिए ✕ दबाएं)</h3>
+<div class="photo-grid" id="photo-grid">लोड हो रहा है...</div>
+</div>
+</div>
+
+</div>
+
+<script>
+let adminPassword = '';
+
+async function login() {
+const input = document.getElementById('password-input').value;
+const msgEl = document.getElementById('login-message');
+if (!input) {
+msgEl.textContent = 'Password डालें।';
+return;
+}
+msgEl.textContent = 'जांच हो रही है...';
+try {
+const res = await fetch('/.netlify/functions/verify-password', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ password: input })
+});
+const data = await res.json();
+if (data.valid) {
+adminPassword = input;
+sessionStorage.setItem('admin_pw', input);
+document.getElementById('login-card').style.display = 'none';
+document.getElementById('admin-panel').style.display = 'block';
+loadPhotos();
+} else {
+msgEl.textContent = 'गलत पासवर्ड।';
+}
+} catch (err) {
+msgEl.textContent = 'लॉगिन में समस्या हुई।';
+console.error(err);
+}
+}
+
+// auto-login if already verified this session
+window.addEventListener('load', async () => {
+const saved = sessionStorage.getItem('admin_pw');
+if (!saved) return;
+try {
+const res = await fetch('/.netlify/functions/verify-password', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ password: saved })
+});
+const data = await res.json();
+if (data.valid) {
+adminPassword = saved;
+document.getElementById('login-card').style.display = 'none';
+document.getElementById('admin-panel').style.display = 'block';
+loadPhotos();
+} else {
+sessionStorage.removeItem('admin_pw');
+}
+} catch (err) {
+console.error(err);
+}
+});
+
+async function loadPhotos() {
+const grid = document.getElementById('photo-grid');
+grid.textContent = 'लोड हो रहा है...';
+try {
+const res = await fetch('/.netlify/functions/fetch-photos');
+const photos = await res.json();
+if (!Array.isArray(photos) || photos.length === 0) {
+grid.innerHTML = '<p>कोई फोटो नहीं मिली।</p>';
+return;
+}
+grid.innerHTML = photos.map(p => `
+<div class="photo-item">
+<img src="${p.url}" alt="photo">
+<button onclick="deletePhoto('${p.filePath}')">✕</button>
+</div>
+`).join('');
+} catch (err) {
+grid.textContent = 'फोटो लोड करने में समस्या हुई।';
+console.error(err);
+}
+}
+
+async function uploadPhoto() {
+const fileInput = document.getElementById('photo-input');
+const msg = document.getElementById('message');
+const btn = document.getElementById('upload-btn');
+if (!fileInput.files.length) {
+msg.textContent = 'पहले एक फोटो चुनें।';
+return;
+}
+btn.disabled = true;
+msg.textContent = 'अपलोड हो रहा है...';
+const formData = new FormData();
+formData.append('photo', fileInput.files[0]);
+try {
+const res = await fetch('/.netlify/functions/upload-photo', {
+method: 'POST',
+headers: { 'x-admin-password': adminPassword },
+body: formData
+});
+const data = await res.json();
+if (res.status === 401) {
+msg.textContent = 'गलत पासवर्ड। दोबारा लॉगिन करें।';
+sessionStorage.removeItem('admin_pw');
+document.getElementById('login-card').style.display = 'block';
+document.getElementById('admin-panel').style.display = 'none';
+} else if (data.url) {
+msg.textContent = 'फोटो अपलोड हो गई!';
+fileInput.value = '';
+loadPhotos();
+} else {
+msg.textContent = 'अपलोड फेल हुआ: ' + (data.error || 'unknown error');
+}
+} catch (err) {
+msg.textContent = 'अपलोड में समस्या हुई।';
+console.error(err);
+} finally {
+btn.disabled = false;
+}
+}
+
+async function deletePhoto(filePath) {
+if (!confirm('क्या आप यह फोटो हटाना चाहते हैं?')) return;
+try {
+const res = await fetch('/.netlify/functions/delete-photo', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'x-admin-password': adminPassword
+},
+body: JSON.stringify({ filePath })
+});
+if (res.status === 401) {
+alert('गलत पासवर्ड। दोबारा लॉगिन करें।');
+sessionStorage.removeItem('admin_pw');
+document.getElementById('login-card').style.display = 'block';
+document.getElementById('admin-panel').style.display = 'none';
+return;
+}
+loadPhotos();
+} catch (err) {
+alert('डिलीट करने में समस्या हुई।');
+console.error(err);
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+[build]
+functions = "netlify/functions"
+command = "npm install"
+publish = "."
+
+[[redirects]]
+from = "/*"
+to = "/jansant1.html"
+status = 200
+
+[build.environment]
+SUPABASE_URL = "https://idqrtnrethfiekkzyfzq.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkcXJ0bnJldGhmaWVra3p5ZnpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNzMxMTQsImV4cCI6MjA1ODc0OTExNH0.FQZhc7fIurC4_oWhZrxe_93yYe98Bxlnc9kH1siYGLI"

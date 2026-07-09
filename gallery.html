@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery - जनसंत परिवार</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 0;
+background: #fff;
+}
+header {
+background: #ff9933;
+color: white;
+padding: 10px;
+text-align: center;
+}
+nav {
+background: #f4f4f4;
+padding: 10px;
+text-align: center;
+}
+nav a {
+margin: 0 15px;
+text-decoration: none;
+color: #333;
+}
+.content {
+padding: 20px;
+text-align: center;
+}
+.gallery {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 20px;
+max-width: 1200px;
+margin: 0 auto;
+padding: 20px;
+}
+.gallery img {
+width: 100%;
+height: 200px;
+object-fit: cover;
+border-radius: 10px;
+transition: transform 0.3s;
+}
+.gallery img:hover {
+transform: scale(1.05);
+}
+@media (max-width: 600px) {
+.gallery {
+grid-template-columns: 1fr;
+}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>जनसंत परिवार</h1>
+</header>
+<nav>
+<a href="jansant1.html">Home</a>
+<a href="profiles.html">Profiles</a>
+<a href="programmes.html">Programs</a>
+<a href="gallery.html">Gallery</a>
+<a href="upcoming.html">Upcoming</a>
+<a href="contact.html">Contact</a>
+</nav>
+<div class="content">
+<h2>गैलरी</h2>
+<div id="gallery-loading">फोटो लोड हो रही हैं...</div>
+<div class="gallery" id="gallery-container"></div>
+</div>
+<script>
+async function loadGallery() {
+const container = document.getElementById('gallery-container');
+const loading = document.getElementById('gallery-loading');
+try {
+const res = await fetch('/.netlify/functions/fetch-photos');
+const photos = await res.json();
+loading.style.display = 'none';
+if (!Array.isArray(photos) || photos.length === 0) {
+container.innerHTML = '<p>अभी कोई फोटो उपलब्ध नहीं है।</p>';
+return;
+}
+container.innerHTML = photos.map(p => `<img src="${p.url}" alt="Photo" loading="lazy">`).join('');
+} catch (err) {
+loading.textContent = 'फोटो लोड करने में समस्या हुई।';
+console.error('Gallery load error:', err);
+}
+}
+loadGallery();
+</script>
+</body>
+</html>
