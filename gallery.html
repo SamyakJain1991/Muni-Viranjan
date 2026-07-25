@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery - जनसंत परिवार</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 0;
+background: #fff;
+}
+header {
+background: #ff9933;
+color: white;
+padding: 10px;
+text-align: center;
+}
+nav {
+background: #f4f4f4;
+padding: 10px;
+text-align: center;
+}
+nav a {
+margin: 0 15px;
+text-decoration: none;
+color: #333;
+}
+.content {
+padding: 20px;
+text-align: center;
+}
+.gallery {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 20px;
+max-width: 1200px;
+margin: 0 auto;
+padding: 20px;
+}
+.gallery img {
+width: 100%;
+height: 200px;
+object-fit: cover;
+border-radius: 10px;
+transition: transform 0.3s;
+}
+.gallery img:hover {
+transform: scale(1.05);
+}
+.photo-card {
+position: relative;
+}
+.whatsapp-share {
+position: absolute;
+bottom: 10px;
+right: 10px;
+background: #25D366;
+width: 36px;
+height: 36px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+text-decoration: none;
+box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.whatsapp-share svg {
+width: 20px;
+height: 20px;
+fill: white;
+}
+@media (max-width: 600px) {
+.gallery {
+grid-template-columns: 1fr;
+}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>जनसंत परिवार</h1>
+</header>
+<nav>
+<a href="jansant1.html" data-hi="होम" data-en="Home">Home</a>
+<a href="profiles.html" data-hi="प्रोफाइल" data-en="Profiles">Profiles</a>
+<a href="programmes.html" data-hi="कार्यक्रम" data-en="Programs">Programs</a>
+<a href="gallery.html" data-hi="गैलरी" data-en="Gallery">Gallery</a>
+<a href="videos.html" data-hi="वीडियो" data-en="Videos">Videos</a>
+<a href="upcoming.html" data-hi="आगामी कार्यक्रम" data-en="Upcoming">Upcoming</a>
+<a href="contact.html" data-hi="संपर्क" data-en="Contact">Contact</a>
+<button id="lang-toggle-btn" onclick="toggleLang()" style="margin-left:15px;padding:4px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:0.85rem;">EN</button>
+</nav>
+<div class="content">
+<h2 data-hi="गैलरी" data-en="Gallery">गैलरी</h2>
+<div id="gallery-loading" data-hi="फोटो लोड हो रही हैं..." data-en="Loading photos...">फोटो लोड हो रही हैं...</div>
+<div class="gallery" id="gallery-container"></div>
+</div>
+<script>
+async function loadGallery() {
+const container = document.getElementById('gallery-container');
+const loading = document.getElementById('gallery-loading');
+try {
+const res = await fetch('/.netlify/functions/fetch-photos');
+const photos = await res.json();
+loading.style.display = 'none';
+if (!Array.isArray(photos) || photos.length === 0) {
+container.innerHTML = '<p>अभी कोई फोटो उपलब्ध नहीं है।</p>';
+return;
+}
+container.innerHTML = photos.map(p => `
+<div class="photo-card">
+<img src="${p.url}" alt="Photo" loading="lazy">
+<a class="whatsapp-share" target="_blank" rel="noopener" title="WhatsApp पर शेयर करें"
+href="https://wa.me/?text=${encodeURIComponent('जनसंत परिवार - फोटो देखें: ' + p.url)}">
+<svg viewBox="0 0 24 24"><path d="M17.6 6.3A8.9 8.9 0 0 0 12 3.9a8.9 8.9 0 0 0-7.7 13.4L3 21l3.8-1.2A8.9 8.9 0 0 0 12 21a8.9 8.9 0 0 0 8.9-8.9c0-2.4-.9-4.6-2.7-6.3Zm-5.6 13c-1.4 0-2.7-.4-3.9-1.1l-.3-.2-2.3.7.7-2.2-.2-.3A7.4 7.4 0 1 1 19.4 12a7.4 7.4 0 0 1-7.4 7.3Zm4-5.5c-.2-.1-1.3-.6-1.5-.7-.2-.1-.3-.1-.5.1-.1.2-.5.7-.6.8-.1.1-.2.1-.4 0-.2-.1-.9-.3-1.7-1-.6-.6-1-1.3-1.2-1.5-.1-.2 0-.3.1-.4l.3-.4c.1-.1.1-.2.2-.3.1-.2 0-.3 0-.4l-.7-1.6c-.2-.4-.4-.4-.5-.4h-.4c-.1 0-.4 0-.6.3-.2.2-.8.8-.8 1.9s.8 2.2 1 2.3c.1.2 1.6 2.5 3.9 3.4.5.2 1 .3 1.3.4.5.2 1 .1 1.4.1.4-.1 1.3-.5 1.5-1 .2-.5.2-.9.1-1l-.4-.1Z"/></svg>
+</a>
+</div>
+`).join('');
+} catch (err) {
+loading.textContent = 'फोटो लोड करने में समस्या हुई।';
+console.error('Gallery load error:', err);
+}
+}
+loadGallery();
+</script>
+<script src="i18n.js"></script>
+</body>
+</html>
