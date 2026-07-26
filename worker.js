@@ -26,6 +26,16 @@ export default {
     }
 
     // Everything else: serve static files (HTML, CSS, JS, images)
-    return env.ASSETS.fetch(request);
+    if (path === '/') {
+      const homeUrl = new URL('/jansant1.html', url.origin);
+      return env.ASSETS.fetch(new Request(homeUrl.toString(), request));
+    }
+
+    let response = await env.ASSETS.fetch(request);
+    if (response.status === 404 && !path.includes('.')) {
+      const htmlUrl = new URL(`${path}.html`, url.origin);
+      response = await env.ASSETS.fetch(new Request(htmlUrl.toString(), request));
+    }
+    return response;
   }
 };
