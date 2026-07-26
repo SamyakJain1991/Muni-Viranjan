@@ -76,6 +76,49 @@ fill: white;
 grid-template-columns: 1fr;
 }
 }
+.admin-toggle-btn {
+margin: 20px auto 0;
+display: inline-block;
+background: #333;
+color: white;
+border: none;
+padding: 8px 20px;
+border-radius: 6px;
+cursor: pointer;
+font-size: 14px;
+}
+#admin-box {
+max-width: 400px;
+margin: 20px auto;
+padding: 15px;
+background: #f9f9f9;
+border-radius: 8px;
+display: none;
+}
+#admin-box input[type="password"] {
+width: 90%;
+padding: 8px;
+margin: 6px 0;
+border: 1px solid #ccc;
+border-radius: 6px;
+}
+#admin-box button {
+background: #ff9933;
+color: white;
+border: none;
+padding: 8px 18px;
+border-radius: 6px;
+cursor: pointer;
+margin-top: 8px;
+}
+#upload-section {
+display: none;
+margin-top: 10px;
+}
+#upload-msg {
+margin-top: 8px;
+font-size: 14px;
+}
 </style>
 </head>
 <body>
@@ -96,6 +139,25 @@ grid-template-columns: 1fr;
 <h2 data-hi="गैलरी" data-en="Gallery">गैलरी</h2>
 <div id="gallery-loading" data-hi="फोटो लोड हो रही हैं..." data-en="Loading photos...">फोटो लोड हो रही हैं...</div>
 <div class="gallery" id="gallery-container"></div>
+
+<button class="admin-toggle-btn" onclick="toggleAdminBox()" data-hi="एडमिन" data-en="Admin">एडमिन</button>
+
+<div id="admin-box">
+<div id="login-box">
+<input type="password" id="admin-password-input" placeholder="Admin Password">
+<br>
+<button onclick="checkGalleryAdmin()">Login</button>
+<div id="admin-login-msg"></div>
+</div>
+
+<div id="upload-section">
+<label style="display:block;margin:10px 0 6px;font-size:14px;">नई फोटो चुनें:</label>
+<input type="file" id="gallery-upload-file" accept="image/*">
+<br>
+<button onclick="uploadGalleryPhoto()">अपलोड करें</button>
+<div id="upload-msg"></div>
+</div>
+</div>
 </div>
 <script>
 async function loadGallery() {
@@ -124,6 +186,78 @@ console.error('Gallery load error:', err);
 }
 }
 loadGallery();
+
+let galleryAdminPassword = '';
+
+function toggleAdminBox() {
+const box = document.getElementById('admin-box');
+box.style.display = box.style.display === 'none' || !box.style.display ? 'block' : 'none';
+}
+
+async function checkGalleryAdmin() {
+const password = document.getElementById('admin-password-input').value;
+const msg = document.getElementById('admin-login-msg');
+if (!password) { msg.textContent = 'Password डालें।'; return; }
+msg.textContent = 'जांच हो रही है...';
+try {
+const res = await fetch('/verify-password', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ password })
+});
+const data = await res.json();
+if (data.valid) {
+galleryAdminPassword = password;
+document.getElementById('login-box').style.display = 'none';
+document.getElementById('upload-section').style.display = 'block';
+} else {
+msg.textContent = 'गलत पासवर्ड।';
+}
+} catch (err) {
+msg.textContent = 'लॉगिन में समस्या हुई।';
+console.error(err);
+}
+}
+
+async function uploadGalleryPhoto() {
+const fileInput = document.getElementById('gallery-upload-file');
+const msg = document.getElementById('upload-msg');
+const file = fileInput.files[0];
+if (!file) {
+msg.textContent = 'पहले फोटो चुनें।';
+return;
+}
+msg.textContent = 'अपलोड हो रहा है...';
+try {
+const dataBase64 = await new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = () => resolve(reader.result.split(',')[1]);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+const res = await fetch('/upload-photo', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'x-admin-password': galleryAdminPassword
+},
+body: JSON.stringify({ filename: file.name, contentType: file.type, dataBase64 })
+});
+if (res.status === 401) {
+msg.textContent = 'गलत पासवर्ड। दोबारा लॉगिन करें।';
+return;
+}
+if (!res.ok) {
+throw new Error('Upload failed');
+}
+msg.textContent = 'फोटो अपलोड हो गई!';
+fileInput.value = '';
+loadGallery();
+} catch (err) {
+msg.textContent = 'अपलोड करने में समस्या हुई।';
+console.error(err);
+}
+}
 </script>
 <script src="i18n.js"></script>
 </body>
