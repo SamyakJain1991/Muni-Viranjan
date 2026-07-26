@@ -196,13 +196,21 @@ return;
 }
 btn.disabled = true;
 msg.textContent = 'अपलोड हो रहा है...';
-const formData = new FormData();
-formData.append('photo', fileInput.files[0]);
+const file = fileInput.files[0];
 try {
+const dataBase64 = await new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = () => resolve(reader.result.split(',')[1]);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
 const res = await fetch('/.netlify/functions/upload-photo', {
 method: 'POST',
-headers: { 'x-admin-password': adminPassword },
-body: formData
+headers: {
+'Content-Type': 'application/json',
+'x-admin-password': adminPassword
+},
+body: JSON.stringify({ filename: file.name, contentType: file.type, dataBase64 })
 });
 const data = await res.json();
 if (res.status === 401) {
