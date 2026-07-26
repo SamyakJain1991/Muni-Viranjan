@@ -7,3 +7,10 @@ directory = "."
 binding = "ASSETS"
 html_handling = "none"
 not_found_handling = "none"
+
+[vars]
+SUPABASE_URL = "https://uylaeratzcdpiwegsccg.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5bGFlcmF0emNkcGl3ZWdzY2NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NzYwMTgsImV4cCI6MjEwMDU1MjAxOH0.98C8RlOCqZrjBfkDZirX_s2DAcrRntyQTtVAiPoAU0I"
+SUPABASE_BUCKET = "gallery-images"
+SUPABASE_DATA_BUCKET = "site-data"
+ADMIN_PASSWORD = "JansantAdmin@2026"
