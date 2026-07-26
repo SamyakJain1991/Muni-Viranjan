@@ -239,7 +239,7 @@ const pastList = document.getElementById('past-list');
 const pastTitle = document.getElementById('past-title');
 const loading = document.getElementById('event-loading');
 try {
-const res = await fetch('/.netlify/functions/get_events');
+const res = await fetch('/get_events');
 const events = await res.json();
 loading.style.display = 'none';
 if (!Array.isArray(events) || events.length === 0) {
@@ -270,7 +270,7 @@ const msg = document.getElementById('login-msg');
 if (!password) { msg.textContent = 'Password डालें।'; return; }
 msg.textContent = 'जांच हो रही है...';
 try {
-const res = await fetch('/.netlify/functions/verify-password', {
+const res = await fetch('/verify-password', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ password })
@@ -297,7 +297,7 @@ reader.onload = () => resolve(reader.result.split(',')[1]);
 reader.onerror = reject;
 reader.readAsDataURL(file);
 });
-const res = await fetch('/.netlify/functions/upload-photo', {
+const res = await fetch('/upload-photo', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
 body: JSON.stringify({ filename: file.name, contentType: file.type, dataBase64 })
@@ -328,7 +328,7 @@ if (fileInput.files && fileInput.files[0]) {
 msg.textContent = 'फोटो अपलोड हो रही है...';
 eventData.image = await uploadEventImage(fileInput.files[0]);
 }
-const res = await fetch('/.netlify/functions/update_events', {
+const res = await fetch('/update_events', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
 body: JSON.stringify({ event: eventData })
@@ -354,7 +354,7 @@ console.error(err);
 async function deleteEvent(id) {
 if (!confirm('क्या आप यह कार्यक्रम हटाना चाहते हैं?')) return;
 try {
-const res = await fetch('/.netlify/functions/update_events', {
+const res = await fetch('/update_events', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
 body: JSON.stringify({ operation: 'delete', id })

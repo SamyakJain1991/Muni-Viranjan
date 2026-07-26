@@ -102,7 +102,7 @@ async function loadGallery() {
 const container = document.getElementById('gallery-container');
 const loading = document.getElementById('gallery-loading');
 try {
-const res = await fetch('/.netlify/functions/fetch-photos');
+const res = await fetch('/fetch-photos');
 const photos = await res.json();
 loading.style.display = 'none';
 if (!Array.isArray(photos) || photos.length === 0) {

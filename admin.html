@@ -119,7 +119,7 @@ return;
 }
 msgEl.textContent = 'जांच हो रही है...';
 try {
-const res = await fetch('/.netlify/functions/verify-password', {
+const res = await fetch('/verify-password', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ password: input })
@@ -145,7 +145,7 @@ window.addEventListener('load', async () => {
 const saved = sessionStorage.getItem('admin_pw');
 if (!saved) return;
 try {
-const res = await fetch('/.netlify/functions/verify-password', {
+const res = await fetch('/verify-password', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ password: saved })
@@ -168,7 +168,7 @@ async function loadPhotos() {
 const grid = document.getElementById('photo-grid');
 grid.textContent = 'लोड हो रहा है...';
 try {
-const res = await fetch('/.netlify/functions/fetch-photos');
+const res = await fetch('/fetch-photos');
 const photos = await res.json();
 if (!Array.isArray(photos) || photos.length === 0) {
 grid.innerHTML = '<p>कोई फोटो नहीं मिली।</p>';
@@ -204,7 +204,7 @@ reader.onload = () => resolve(reader.result.split(',')[1]);
 reader.onerror = reject;
 reader.readAsDataURL(file);
 });
-const res = await fetch('/.netlify/functions/upload-photo', {
+const res = await fetch('/upload-photo', {
 method: 'POST',
 headers: {
 'Content-Type': 'application/json',
@@ -236,7 +236,7 @@ btn.disabled = false;
 async function deletePhoto(filePath) {
 if (!confirm('क्या आप यह फोटो हटाना चाहते हैं?')) return;
 try {
-const res = await fetch('/.netlify/functions/delete-photo', {
+const res = await fetch('/delete-photo', {
 method: 'POST',
 headers: {
 'Content-Type': 'application/json',
